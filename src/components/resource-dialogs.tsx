@@ -278,6 +278,10 @@ export function UploadDialog({
                 </button>
               </p>
               <p className="mt-1 text-xs text-stone-500">Imágenes, PDF, videos, presentaciones y documentos.</p>
+              <p className="mt-1 text-xs text-stone-500">
+                Las imágenes JPG y PNG se optimizan sin reducir su resolución; si no quedan más livianas, se conserva
+                el archivo original.
+              </p>
               <input
                 ref={inputRef}
                 type="file"

@@ -62,8 +62,10 @@ materiales/                                  (bucket privado)
         └── thumb-{fecha}.webp               miniatura (solo imágenes)
 ```
 
-Los archivos se sirven con enlaces firmados temporales. Las miniaturas y portadas se generan en el
-navegador al subir, para que las galerías carguen rápido.
+Los archivos se sirven con enlaces firmados temporales. Las miniaturas se generan en el navegador al
+subir, para que las galerías carguen rápido. Las imágenes JPG y PNG estáticas se optimizan sin reducir
+su resolución; solo se guarda la versión optimizada cuando pesa menos que el original. Otros formatos
+y animaciones se conservan sin cambios.
 
 ### Reglas de seguridad
 

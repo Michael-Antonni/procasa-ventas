@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BUCKET } from "./constants";
 import { extensionOf, safeFileName } from "./format";
+import { optimizeImage } from "./image-optimization";
 import { getSupabase, SUPABASE_ANON_KEY, SUPABASE_URL } from "./supabase/client";
 import type { Resource } from "./types";
 
@@ -227,10 +228,14 @@ export async function uploadResourceFile(
   const token = await accessToken();
   const stamp = Date.now();
   const folder = `${projectId}/${resourceId}`;
-  const storagePath = `${folder}/${stamp}-${safeFileName(file.name)}`;
+  const body = await optimizeImage(file);
+  const ext = body === file ? extensionOf(file.name) : blobExt(body);
+  const originalBase = file.name.replace(/\.[^.]+$/, "");
+  const fileName = body === file ? file.name : `${originalBase}.${ext}`;
+  const storagePath = `${folder}/${stamp}-${safeFileName(fileName)}`;
   const mime = file.type || "application/octet-stream";
 
-  await uploadObject(storagePath, file, mime, token, onProgress);
+  await uploadObject(storagePath, body, body.type || mime, token, onProgress);
 
   let thumbPath: string | null = null;
   if (mime.startsWith("image/")) {
@@ -249,19 +254,18 @@ export async function uploadResourceFile(
   return {
     storage_path: storagePath,
     thumb_path: thumbPath,
-    file_name: file.name,
-    mime_type: mime,
-    extension: extensionOf(file.name),
-    size_bytes: file.size,
+    file_name: fileName,
+    mime_type: body.type || mime,
+    extension: ext,
+    size_bytes: body.size,
   };
 }
 
-/** Sube la portada de un proyecto, reducida para que cargue rápido. */
+/** Sube la portada de un proyecto, optimizada sin reducir su resolución. */
 export async function uploadCover(projectId: string, file: File): Promise<string> {
   const token = await accessToken();
-  const resized = await resizeImage(file, 1600, 0.85);
-  const body = resized ?? file;
-  const ext = resized ? blobExt(resized) : extensionOf(file.name) || "jpg";
+  const body = await optimizeImage(file);
+  const ext = body === file ? extensionOf(file.name) || "jpg" : blobExt(body);
   const path = `${projectId}/portada-${Date.now()}.${ext}`;
   await uploadObject(path, body, body.type || "image/jpeg", token);
   return path;
